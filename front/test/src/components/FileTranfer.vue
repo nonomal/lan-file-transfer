@@ -60,12 +60,7 @@ export default {
                                             },
                                             style:{
                                                 marginRight: '0.3125rem',
-                                                // color: '#515a6e',
-                                                // fontSize: '14px',
                                                 overflow: 'hidden',
-                                                // textOverflow: 'ellipsis',
-                                                // whiteSpace: 'nowrap',
-                                                //display: 'block'     ,//设置样式，超过文字省略号显示
                                                 cursor: 'pointer'
                                             },
                                             on: {
