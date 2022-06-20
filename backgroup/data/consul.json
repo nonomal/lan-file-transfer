@@ -1,0 +1,17 @@
+{  
+	"datacenter": "dc1", 
+	"node_name": "192.168.1.137", 
+	"server": true,  
+	"bootstrap_expect": 3,  
+ 	"data_dir": "/data/consul/consul_data", 
+	"log_level": "INFO", 
+	"log_file":"/data/consul/consul_data/logs/",
+	"ui": true,
+	"bind_addr":"192.168.1.137", 
+	"client_addr":"0.0.0.0",  
+	"retry_join": ["192.168.1.138","192.168.1.139"],
+	"raft_protocol":3,
+	"enable_debug":false,
+	"rejoin_after_leave":true,
+	"enable_syslog":false
+}
