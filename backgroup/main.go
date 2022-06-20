@@ -61,7 +61,6 @@ func Cors() gin.HandlerFunc {
 		if method == "OPTIONS" {
 			context.JSON(http.StatusOK, "Options Request!")
 		}
-
 		//处理请求
 		context.Next()
 	}

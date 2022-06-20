@@ -4,7 +4,7 @@ import (
 	assetfs "github.com/elazarl/go-bindata-assetfs"
 	"github.com/gin-gonic/gin"
 	"lan-file-transfer/apps"
-	"lan-file-transfer/dist"
+	"lan-file-transfer/asset"
 	"net/http"
 )
 
@@ -14,13 +14,14 @@ func Router(r *gin.Engine) {
 	//r.Static("/static", "./dist/static")
 	//r.StaticFile("/", "./dist/index.html")
 
-	fsCss := assetfs.AssetFS{Asset: dist.Asset, AssetDir: dist.AssetDir, AssetInfo: nil, Prefix: "dist1/static/css", Fallback: "index.html"}
+	// 执行：go-bindata -o asset.go dist/...
+	fsCss := assetfs.AssetFS{Asset: asset.Asset, AssetDir: asset.AssetDir, AssetInfo: nil, Prefix: "dist/static/css", Fallback: "index.html"}
 
-	fsJs := assetfs.AssetFS{Asset: dist.Asset, AssetDir: dist.AssetDir, AssetInfo: nil, Prefix: "dist1/static/js", Fallback: "index.html"}
+	fsJs := assetfs.AssetFS{Asset: asset.Asset, AssetDir: asset.AssetDir, AssetInfo: nil, Prefix: "dist/static/js", Fallback: "index.html"}
 
-	fsFonts := assetfs.AssetFS{Asset: dist.Asset, AssetDir: dist.AssetDir, AssetInfo: nil, Prefix: "dist1/static/fonts", Fallback: "index.html"}
+	fsFonts := assetfs.AssetFS{Asset: asset.Asset, AssetDir: asset.AssetDir, AssetInfo: nil, Prefix: "dist/static/fonts", Fallback: "index.html"}
 
-	fsImg := assetfs.AssetFS{Asset: dist.Asset, AssetDir: dist.AssetDir, AssetInfo: nil, Prefix: "dist1/static/img", Fallback: "index.html"}
+	fsImg := assetfs.AssetFS{Asset: asset.Asset, AssetDir: asset.AssetDir, AssetInfo: nil, Prefix: "dist/static/img", Fallback: "index.html"}
 
 	r.StaticFS("/static/css", &fsCss)
 	r.StaticFS("/static/fonts", &fsFonts)
@@ -29,7 +30,7 @@ func Router(r *gin.Engine) {
 
 	r.GET("/", func(c *gin.Context) {
 		c.Writer.WriteHeader(200)
-		indexHtml, _ := dist.Asset("dist1/index.html")
+		indexHtml, _ := asset.Asset("dist/index.html")
 		_, _ = c.Writer.Write(indexHtml)
 		c.Writer.Header().Add("Accept", "text/html")
 		c.Writer.Flush()
