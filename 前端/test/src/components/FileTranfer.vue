@@ -4,20 +4,24 @@
         v-model="openQrCode"
         width="250"
         title="扫描二维码进入">
-        <div style="text-align:center" id="qrcode"></div> 
+        <div style="text-align:center;left: 8px;position:relative;" id="qrcode"></div> 
         <div slot="footer"></div>
     </Modal>
      <!-- <div> -->
-    <Select v-model="url" style="width: 40%; margin: 0.675rem;">
+    <!-- <Select v-model="url" style="width: 40%; margin: 0.675rem;">
         <Option v-for="item in urls" :value="item" :key="item">{{ item }}</Option>
-    </Select>
-    <Button type="error" @click="openQrCode = true">点击显示二维码</Button>
+    </Select> -->
+   
     <br/>
-  
-    <!-- <img style="width: 15%" src="../assets/tranfer.png"> -->
+    <Button  v-if="!isMobile" style="width: 15%"  type="info" shape="circle" @click="openQrCodeModal">显示系统二维码</Button>
+    <br/>
+    <img style="width: 15%" src="../assets/tranfer.png" >
+    
     <br>
     <Input v-model="selectKey" size="large" placeholder="请输入你想查询的文件名..."  style="width: 60%; margin: 0.675rem;" @on-enter="select_file"></Input> 
-    <Button type="primary" @click="select_file">查询</Button>
+    <Button type="primary" @click="select_file">查询</Button> 
+   
+   
     <br/>
    
     <Upload
@@ -32,7 +36,7 @@
         </div>
     </Upload>
     <br>
-    <Table ref='tableData' stripe border :context="self" :columns="columns1" :data="data1"></Table>
+    <Table  stripe border :context="self" :columns="columns1" :data="data1"></Table>
     <Page     :total="tablePage.total"  :current="tablePage.pageIndex"   :page-size-opts="itemsPerPages" 
         show-sizer  
         show-total  
@@ -66,11 +70,13 @@ export default {
             urls:[],
             url:"",
             openQrCode:false,
+            isMobile:false,
             columns1: [
                 {
                     title: '文件名',
                     align:'center',
                     key: 'filename',
+                   
                     render :function (h, params) {
                         //console.log(params)
                                 return h('div',[h(Button,{
@@ -98,6 +104,7 @@ export default {
                     title: '操作',
                     key: 'action',
                     align:'center',
+                    maxWidth:80,
                     render :function (h, params) {
                                 return h('div',[h(Button,{
                                      props: {
@@ -133,11 +140,9 @@ export default {
         }
     },
     mounted: function () {
-        window.onresize = event => {
-            this.$refs.tableData.handleResize();       
-        }
         this.getData()
         this.getUrls()
+        this.checkIsMobile()
     },
     methods: {
         download_file(fileName) {
@@ -230,7 +235,8 @@ export default {
             let _this=this;
             // new QRCode(document.getElementById('qrcode'), 'your content');
             var qrcode = new QRCode('qrcode', {
-                text: _this.url,
+                 text: _this.url,
+                //text: "https://192.168.1.102:9999",
                 width: 200,
                 height: 200,
                 colorDark : '#000000',
@@ -241,6 +247,29 @@ export default {
             // 使用 API
                 // qrcode.clear();
                 // qrcode.makeCode('new content');
+        },
+        checkIsMobile() {
+            var flag=navigator.userAgent.match(/(phone|pad|pod|iPhone|iPod|ios|iPad|Android|Mobile|BlackBerry|IEMobile|MQQBrowser|JUC|Fennec|wOSBrowser|BrowserNG|WebOS|Symbian|Windows Phone)/i)
+            
+             if(flag){
+                this._data.isMobile=true
+             }else{
+                this._data.isMobile=false
+             }
+             console.log(this._data.isMobile)
+        },
+        openQrCodeModal(){
+            console.log("sss")
+            console.log( this._data.isMobile)
+           
+            if(!this._data.isMobile){
+                this._data.openQrCode = true
+            }else{
+                this._data.openQrCode = false
+            }
+           
+            console.log( this._data._openQrCode)
+           
         },
         handlePage(value){
             this._data.tablePage.pageIndex = value;
