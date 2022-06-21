@@ -1,0 +1,9 @@
+1.nuget 包 学会搭建
+2.docker集群 部署，yaml部署，
+3.nigux部署，负载均衡
+4.rabbitmq 熟练
+5.grpc 集群 负载均衡  微服务集群负载均衡
+6.ocelot 网关
+7.ci/cd 自动部署。gitlib
+8，熟悉 vue ，搭建
+9.supervisor 进程管理学会。
