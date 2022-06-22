@@ -20,11 +20,11 @@ lan-file-transfer
 
 PC界面
 
-![image-20220622215543930](../图片/README_md_files/image-20220622215543930.png)
+![image-20220622215543930](https://user-images.githubusercontent.com/53111507/175050497-4b29f17b-6593-4560-ac25-f60e00b15858.png)
 
 手机界面
 
-![image-20220622215930993](../图片/README_md_files/image-20220622215930993.png)
+![image-20220622215930993](https://user-images.githubusercontent.com/53111507/175050554-3276ebd6-5563-4dfa-9da1-7a9bd0cc9ae8.png)
 
 
 
