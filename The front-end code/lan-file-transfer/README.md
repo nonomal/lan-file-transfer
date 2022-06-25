@@ -1,4 +1,4 @@
-# test
+# lan-file-transfer
 
 > A Vue.js project
 

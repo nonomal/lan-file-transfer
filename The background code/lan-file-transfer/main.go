@@ -10,7 +10,6 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
-	"time"
 )
 
 func init() {
@@ -30,9 +29,9 @@ func main() {
 	r.Use(Cors())
 	router.Router(r)
 	go func() {
-		time.Sleep(1000 * time.Millisecond)
 		apps.OpenUrl(config.Get().ServerPort)
 	}()
+
 	r.Run(":" + strconv.Itoa(config.Get().ServerPort))
 
 }
