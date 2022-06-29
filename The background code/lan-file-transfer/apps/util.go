@@ -19,28 +19,39 @@ var openURLCommands = map[string]string{
 	"linux":   "c-open ", //eog -w
 }
 
-func getURL(serverPort int) string {
+func getURL(serverPort int) []string {
 	addrList, err := net.InterfaceAddrs()
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-	url := ""
+	urls := make([]string, 0)
+
+	//先添加192.168.1. 开头的ip
 	for _, address := range addrList {
 		// 检查ip地址判断是否回环地址
 		if ipNet, ok := address.(*net.IPNet); ok && !ipNet.IP.IsLoopback() && ipNet.IP.To4() != nil &&
 			strings.Index(ipNet.IP.String(), "192.168.1.") >= 0 {
-			url = "http://" + ipNet.IP.String() + ":" + strconv.Itoa(serverPort)
+			url := "http://" + ipNet.IP.String() + ":" + strconv.Itoa(serverPort)
+			urls = append(urls, url)
 			break
 		}
 	}
-	return url
+	for _, address := range addrList {
+		// 检查ip地址判断是否回环地址
+		if ipNet, ok := address.(*net.IPNet); ok && !ipNet.IP.IsLoopback() && ipNet.IP.To4() != nil &&
+			strings.Index(ipNet.IP.String(), "192.168.1.") < 0 {
+			url := "http://" + ipNet.IP.String() + ":" + strconv.Itoa(serverPort)
+			urls = append(urls, url)
+		}
+	}
+	return urls
 
 }
 
 // OpenUrl  打开 本地ip+端口 浏览器
 func OpenUrl(serverPort int) error {
-	uri := getURL(serverPort)
+	uri := "http://localhost:" + strconv.Itoa(serverPort)
 	//runtime.GOOS
 	run, ok := openURLCommands[runtime.GOOS]
 	if !ok {

@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"io/ioutil"
 	"lan-file-transfer/config"
+	"lan-file-transfer/model"
 	"net/http"
 	"os"
 	"sort"
@@ -95,12 +96,13 @@ func GetPageListFile(g *gin.Context) {
 		})
 	}
 	total := len(newFiles)
-	data := make([]string, 0)
+	data := make([]model.FileModel, 0)
 	length := len(newFiles)
 	for i := 0; i < pageSize; i++ {
 		if length > pageSize*(pageIndex-1)+i {
 			name := newFiles[pageSize*(pageIndex-1)+i].Name()
-			data = append(data, name)
+			createTime := newFiles[pageSize*(pageIndex-1)+i].ModTime().Unix()
+			data = append(data, model.FileModel{FileName: name, CreateTime: createTime})
 		}
 	}
 	g.JSON(http.StatusOK, map[string]interface{}{
@@ -110,9 +112,7 @@ func GetPageListFile(g *gin.Context) {
 }
 
 func GetUrls(g *gin.Context) {
-	url := getURL(config.Get().ServerPort)
-	urls := make([]string, 0)
-	urls = append(urls, url)
+	urls := getURL(config.Get().ServerPort)
 	g.JSON(http.StatusOK, map[string]interface{}{
 		"urls": urls,
 	})
