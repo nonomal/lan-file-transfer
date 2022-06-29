@@ -20,12 +20,13 @@ lan-file-transfer
 
 PC界面
 
-![image-20220622215543930](https://user-images.githubusercontent.com/53111507/175050497-4b29f17b-6593-4560-ac25-f60e00b15858.png)
+![1656511393830](https://user-images.githubusercontent.com/53111507/176456665-b8684753-6611-488c-9360-4e6083cd6aac.png)
+
 
 手机界面
 
-![image-20220622215930993](https://user-images.githubusercontent.com/53111507/175050554-3276ebd6-5563-4dfa-9da1-7a9bd0cc9ae8.png)
 
+![ee7e301b696fbe8f651c8dc7f07d4a1](https://user-images.githubusercontent.com/53111507/176456696-1bf2e29c-04ca-4391-82af-2c6db8b54911.jpg)
 
 
 
@@ -36,7 +37,7 @@ PC界面
 
 3、手机可扫码（同一个局域网内）进入此界面，实现文件共享；
 
-4、其他局域网内的电脑也可以输入网址进入此界面，实现文件共享；
+4、其他（局域网内的）电脑也可以输入网址进入此界面，实现文件共享；
 
 
 
