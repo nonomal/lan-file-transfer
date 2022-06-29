@@ -20,13 +20,14 @@ lan-file-transfer
 
 PC界面
 
-![1656511393830](https://user-images.githubusercontent.com/53111507/176456665-b8684753-6611-488c-9360-4e6083cd6aac.png)
+![1656511393830](https://user-images.githubusercontent.com/53111507/176457188-1271f7c0-afb8-43be-9118-54f646227697.png)
+
 
 
 手机界面
 
+![ee7e301b696fbe8f651c8dc7f07d4a1](https://user-images.githubusercontent.com/53111507/176458425-75b8e517-91cf-4997-8eb1-cd073d5ba79c.jpg)
 
-![ee7e301b696fbe8f651c8dc7f07d4a1](https://user-images.githubusercontent.com/53111507/176456696-1bf2e29c-04ca-4391-82af-2c6db8b54911.jpg)
 
 
 
