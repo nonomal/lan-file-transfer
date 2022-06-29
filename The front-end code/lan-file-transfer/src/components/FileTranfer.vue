@@ -4,13 +4,14 @@
         v-model="openQrCode"
         width="250"
         title="扫描二维码进入">
+        <Select v-model="url" style="width:200px; margin: 0.675rem;" @on-change="updateQrCode">
+            <Option v-for="item in urls" :value="item" :key="item">{{ item }}</Option>
+        </Select>
         <div style="text-align:center;left: 8px;position:relative;" id="qrcode"></div> 
         <div slot="footer"></div>
     </Modal>
      <!-- <div> -->
-    <!-- <Select v-model="url" style="width: 40%; margin: 0.675rem;">
-        <Option v-for="item in urls" :value="item" :key="item">{{ item }}</Option>
-    </Select> -->
+  
    
     <br/>
     <Button  v-if="!isMobile" style="width: 15%"  type="info" shape="circle" @click="openQrCodeModal">显示系统二维码</Button>
@@ -71,19 +72,20 @@ export default {
             url:"",
             openQrCode:false,
             isMobile:false,
+            qrcode:"",
+            hostPort:"",//测试的时候需要切换ip
+             //hostPort:"http://192.168.1.102:9999",//测试的时候需要切换ip
             columns1: [
                 {
                     title: '文件名',
                     align:'center',
                     key: 'filename',
-                   
                     render :function (h, params) {
-                        //console.log(params)
+                        console.log(params.column._width)
                                 return h('div',[h(Button,{
                                             props: {
                                                 // type: 'success',
-                                                size: 'small',
-                                              
+                                                 size: 'small',
                                             },
                                             style:{
                                                 marginRight: '0.3125rem',
@@ -98,13 +100,33 @@ export default {
                                                 }
                                             }
                                 },params.row.filename)])
+
                             }
+                },
+                {
+                    title: '上传时间',
+                    key: 'createtime',
+                    align:'center',
+                    maxWidth:150,
+                    render: (h, params) => {
+                        return h('div', [
+                            h('span', {
+                              style: {
+                                    display: 'inline-block',
+                                    width: '100%',
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis',
+                                    whiteSpace: 'nowrap'
+                               },
+                       }, params.row.createtime)
+                        ])
+                    }
                 },
                 {
                     title: '操作',
                     key: 'action',
                     align:'center',
-                    maxWidth:80,
+                    maxWidth:100,
                     render :function (h, params) {
                                 return h('div',[h(Button,{
                                      props: {
@@ -126,15 +148,19 @@ export default {
             data1: [
                 {
                     filename: '图片ssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss.png',
+                    createtime:"1"
                 },
                 {
                     filename: '视频.mp4',
+                    createtime:"2"
                 },
                 {
                     filename: '1.txt',
+                    createtime:"3"
                 },
                 {
                     filename: '身份证.jpg',
+                    createtime:""
                 }
             ]
         }
@@ -190,16 +216,17 @@ export default {
                 pageSize:this._data.tablePage.pageSize
             }
           
-            _this.axios.get('/api/files',
+            _this.axios.get(_this.hostPort+'/api/files',
                 {
                     params: param
                 })   
                 .then(function (response) {
                     if(response.status==200){
                         let _data=[]
-                        response.data.data.forEach (function (item, intex) {
+                        response.data.data.forEach (function (item, index) {
                         var model = {
-                                filename:item
+                                filename:item.FileName,
+                                createtime:_this.numberToTimeStr(item.CreateTime) 
                             }
                         _data.push(model);
                         })
@@ -219,9 +246,8 @@ export default {
         },
         getUrls(){
             let _this=this;
-            _this.axios.get('/api/getUrls')   
+            _this.axios.get(_this.hostPort+'/api/getUrls')   
                 .then(function (response) {
-                   console.log(response)
                    _this._data.urls=response.data.urls;
                    _this._data.url=response.data.urls[0];
                    _this.getQrCode()
@@ -231,11 +257,15 @@ export default {
                 }
             );
         },
+        updateQrCode(){
+            this.qrcode.clear();
+            this.qrcode.makeCode(this.url);
+        },
+
         getQrCode(){
-            let _this=this;
             // new QRCode(document.getElementById('qrcode'), 'your content');
-            var qrcode = new QRCode('qrcode', {
-                 text: _this.url,
+            this.qrcode = new QRCode('qrcode', {
+                 text: this.url,
                 //text: "https://192.168.1.102:9999",
                 width: 200,
                 height: 200,
@@ -245,8 +275,8 @@ export default {
                 
             });
             // 使用 API
-                // qrcode.clear();
-                // qrcode.makeCode('new content');
+            // qrcode.clear();
+            // qrcode.makeCode('new content');
         },
         checkIsMobile() {
             var flag=navigator.userAgent.match(/(phone|pad|pod|iPhone|iPod|ios|iPad|Android|Mobile|BlackBerry|IEMobile|MQQBrowser|JUC|Fennec|wOSBrowser|BrowserNG|WebOS|Symbian|Windows Phone)/i)
@@ -256,20 +286,13 @@ export default {
              }else{
                 this._data.isMobile=false
              }
-             console.log(this._data.isMobile)
         },
         openQrCodeModal(){
-            console.log("sss")
-            console.log( this._data.isMobile)
-           
             if(!this._data.isMobile){
                 this._data.openQrCode = true
             }else{
                 this._data.openQrCode = false
             }
-           
-            console.log( this._data._openQrCode)
-           
         },
         handlePage(value){
             this._data.tablePage.pageIndex = value;
@@ -279,6 +302,16 @@ export default {
             this._data.tablePage.pageIndex = 1;
             this._data.tablePage.pageSize = value;
             this.getData();
+        },
+        numberToTimeStr(fmt) {
+            const time = new Date(fmt * 1000);
+            const Y = time.getFullYear()
+            const M = (time.getMonth() + 1).toString().padStart(2, '0')
+            const D = time.getDate().toString().padStart(2, '0')
+            const h = time.getHours().toString().padStart(2, '0')
+            const m = time.getMinutes().toString().padStart(2, '0')
+            const s = time.getSeconds().toString().padStart(2, '0')
+            return `${Y}-${M}-${D} ${h}:${m}:${s}`
         }
     }
 }
