@@ -29,7 +29,7 @@ func getURL(serverPort int) string {
 	for _, address := range addrList {
 		// 检查ip地址判断是否回环地址
 		if ipNet, ok := address.(*net.IPNet); ok && !ipNet.IP.IsLoopback() && ipNet.IP.To4() != nil &&
-			strings.Index(ipNet.IP.String(), "192.168.1") >= 0 {
+			strings.Index(ipNet.IP.String(), "192.168.1.") >= 0 {
 			url = "http://" + ipNet.IP.String() + ":" + strconv.Itoa(serverPort)
 			break
 		}
@@ -123,5 +123,4 @@ func FindFreePort(portNumber int) int {
 		temp++
 	}
 	return portNumber
-
 }
