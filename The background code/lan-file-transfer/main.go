@@ -36,7 +36,7 @@ func main() {
 
 }
 
-// Cors 跨域设置
+// Cors 跨域设置  调试的时候用
 func Cors() gin.HandlerFunc {
 	return func(context *gin.Context) {
 		method := context.Request.Method

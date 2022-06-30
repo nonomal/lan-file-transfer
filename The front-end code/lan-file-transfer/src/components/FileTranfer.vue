@@ -37,7 +37,7 @@
         </div>
     </Upload>
     <br>
-    <Table  stripe border :context="self" :columns="columns1" :data="data1"></Table>
+    <Table  stripe border :columns="columns1" :data="data1"></Table>
     <Page     :total="tablePage.total"  :current="tablePage.pageIndex"   :page-size-opts="itemsPerPages" 
         show-sizer  
         show-total  
@@ -60,7 +60,6 @@ export default {
     let _this=this;
     return {
             selectKey:"",
-            self: this,
             tablePage:{
                 total:100,
                 pageIndex:1,
@@ -74,71 +73,52 @@ export default {
             isMobile:false,
             qrcode:"",
             hostPort:"",//测试的时候需要切换ip
-             //hostPort:"http://192.168.1.102:9999",//测试的时候需要切换ip
+            //hostPort:"http://192.168.1.102:9999",//测试的时候需要切换ip
             columns1: [
                 {
                     title: '文件名',
                     align:'center',
                     key: 'filename',
-                    render :function (h, params) {
-                        console.log(params.column._width)
-                                return h('div',[h(Button,{
-                                            props: {
-                                                // type: 'success',
-                                                 size: 'small',
-                                            },
-                                            style:{
-                                                marginRight: '0.3125rem',
-                                                overflow: 'hidden',
-                                                cursor: 'pointer'
-                                            },
-                                            on: {
-                                                click:()=> {
-                                                   // console.log(_this)
-                                                    var value=params.row.filename
-                                                    _this.download_file(value)
-                                                }
+                    render: (h, params) => {
+                            return h('span', {
+                                        style: {
+                                            
+                                            margin:'2px',
+                                            border:'',
+                                            color: '#FF7D41',
+                                            cursor: 'pointer'
+                                        },
+                                        on: {
+                                            click: () => {
+                                                var value=params.row.filename
+                                                _this.download_file(value)
                                             }
-                                },params.row.filename)])
+                                        }
+                            }, params.row.filename);
+                    }
 
-                            }
                 },
                 {
                     title: '上传时间',
                     key: 'createtime',
                     align:'center',
-                    maxWidth:150,
-                    render: (h, params) => {
-                        return h('div', [
-                            h('span', {
-                              style: {
-                                    display: 'inline-block',
-                                    width: '100%',
-                                    overflow: 'hidden',
-                                    textOverflow: 'ellipsis',
-                                    whiteSpace: 'nowrap'
-                               },
-                       }, params.row.createtime)
-                        ])
-                    }
+                    width:100,
                 },
                 {
                     title: '操作',
                     key: 'action',
                     align:'center',
-                    maxWidth:100,
+                    maxWidth:80,
                     render :function (h, params) {
-                                return h('div',[h(Button,{
-                                     props: {
+                                return h('div',[h('i-button',{
+                                    props:  {
                                                 type: 'error',
                                                 size: 'small'
                                             },
-                                            on: {
+                                    on:     {
                                                 click: () => {
-                                                    console.log(params)
-                                                    var index=params.index
                                                     var value=params.row.filename
-                                                   _this.delete_file(value)
+                                                    _this.delete_file(value)
                                                 }
                                             }
                                 },"删除")])
@@ -231,6 +211,7 @@ export default {
                         _data.push(model);
                         })
                         _this._data.data1=_data;
+                        console.log(_data)
                         _this._data.tablePage.total=response.data.total
                     }else{
                         _this.$Modal.info({
