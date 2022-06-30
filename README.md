@@ -19,7 +19,7 @@ lan-file-transfer
 
 ### PC 界面 与 Mobile界面
 
-<img src=https://user-images.githubusercontent.com/53111507/176457188-1271f7c0-afb8-43be-9118-54f646227697.png  width=500 height=510/> <img src=https://user-images.githubusercontent.com/53111507/176458425-75b8e517-91cf-4997-8eb1-cd073d5ba79c.jpg width=300 height=510 />
+<img src=https://user-images.githubusercontent.com/53111507/176719722-5ad36ce2-424e-4fbb-bbc2-251db8a7e9fe.png  width=500 height=510/> <img src=https://user-images.githubusercontent.com/53111507/176719871-8b31f639-828b-4d3a-ba8f-fef550f61f41.jpg width=300 height=510 />
 
 
 
