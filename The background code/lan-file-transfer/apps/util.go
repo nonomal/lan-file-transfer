@@ -37,6 +37,7 @@ func getURL(serverPort int) []string {
 			break
 		}
 	}
+	//再添加 除 192.168.1. 开头 以外的ip
 	for _, address := range addrList {
 		// 检查ip地址判断是否回环地址
 		if ipNet, ok := address.(*net.IPNet); ok && !ipNet.IP.IsLoopback() && ipNet.IP.To4() != nil &&
