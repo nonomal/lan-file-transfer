@@ -17,20 +17,19 @@ lan-file-transfer
 
 ## 功能截图
 
-PC界面
+### PC 界面 与 Mobile界面
 
-![1656511393830](https://user-images.githubusercontent.com/53111507/176457188-1271f7c0-afb8-43be-9118-54f646227697.png)
-
-
-
-手机界面
-
-![ee7e301b696fbe8f651c8dc7f07d4a1](https://user-images.githubusercontent.com/53111507/176458425-75b8e517-91cf-4997-8eb1-cd073d5ba79c.jpg)
+<img src=https://user-images.githubusercontent.com/53111507/176457188-1271f7c0-afb8-43be-9118-54f646227697.png  /> <img src=https://user-images.githubusercontent.com/53111507/176458425-75b8e517-91cf-4997-8eb1-cd073d5ba79c.jpg width=300 height=510 />
 
 
 
 
-## 3. 使用方法
+
+
+
+
+
+##  使用步骤
 1、点击可执行文件，就会自动打开浏览器（这里建议安装谷歌浏览器）；
 
 2、此时会生成data文件夹，文件都会存在此文件夹内；
@@ -38,6 +37,5 @@ PC界面
 3、手机可扫码（同一个局域网内）进入此界面，实现文件共享；
 
 4、其他（局域网内的）电脑也可以输入网址进入此界面，实现文件共享；
-
 
 
