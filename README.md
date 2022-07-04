@@ -1,11 +1,11 @@
-# 简易局域网文件传输与共享
+# （！！！极其方便简单的！！！）   局域网文件传输与共享
 
-lan-file-transfer
+lan-file-transfer——只需一个文件（exe）双击即可开启。
 
 ## 基本功能
 
 - [x] 文件共享服务器
-- [x] 简单的单个可执行文件（只需一个文件（exe）双击开启。）
+- [x] 简单的单个可执行文件
 - [x] 上传文件界面（支持点选和拖拽）
 - [x] 二维码扫码进入
 - [x] 共享文件在线管理界面
@@ -19,7 +19,7 @@ lan-file-transfer
 
 ### PC 界面 与 Mobile界面
 
-<img src=https://user-images.githubusercontent.com/53111507/176457188-1271f7c0-afb8-43be-9118-54f646227697.png  width=500 height=510/> <img src=https://user-images.githubusercontent.com/53111507/176458425-75b8e517-91cf-4997-8eb1-cd073d5ba79c.jpg width=300 height=510 />
+<img src=https://user-images.githubusercontent.com/53111507/176719722-5ad36ce2-424e-4fbb-bbc2-251db8a7e9fe.png  width=500 height=510/> <img src=https://user-images.githubusercontent.com/53111507/176719871-8b31f639-828b-4d3a-ba8f-fef550f61f41.jpg width=300 height=510 />
 
 
 
