@@ -20,11 +20,10 @@ func init() {
 }
 
 func main() {
-
 	flag.Parse()
 	//寻找通过指定端口寻找附近空闲端口
 	config.Get().ServerPort = apps.FindFreePort(config.Get().ServerPort)
-	apps.CreateDir("./data")
+	apps.CreateDir(apps.GetCurrentDirectory() + "/data")
 	r := gin.Default()
 	r.Use(Cors())
 	router.Router(r)
