@@ -19,7 +19,7 @@ func UploadFile(g *gin.Context) {
 	if err != nil {
 		g.String(500, "上传文件出错")
 	}
-	g.SaveUploadedFile(file, "./data/"+file.Filename)
+	g.SaveUploadedFile(file, GetCurrentDirectory()+"/data/"+file.Filename)
 
 	g.JSON(http.StatusOK, map[string]interface{}{
 		"code":    200,
@@ -35,7 +35,7 @@ func DeleteFile(g *gin.Context) {
 			"message": "请选择文件名",
 		})
 	}
-	err := os.Remove("./data/" + fileName)
+	err := os.Remove(GetCurrentDirectory() + "/data/" + fileName)
 	if err != nil {
 		g.JSON(http.StatusNotFound, map[string]interface{}{
 			"code": 404,
@@ -63,7 +63,7 @@ func GetPageListFile(g *gin.Context) {
 	if !exist {
 		pageSizeStr = "10"
 	}
-	path := "./data"
+	path := GetCurrentDirectory() + "/data"
 	files, err := ioutil.ReadDir(path)
 	if err != nil {
 		fmt.Println(err)

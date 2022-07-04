@@ -42,7 +42,7 @@ func Router(r *gin.Engine) {
 	//删除文件
 	r.DELETE("/api/deleteFile", apps.DeleteFile)
 	//数据
-	r.StaticFS("/data", http.Dir("./data"))
+	r.StaticFS("/data", http.Dir(apps.GetCurrentDirectory()+"/data"))
 
 	//获取url 地址
 	r.GET("/api/getUrls", apps.GetUrls)
