@@ -18,7 +18,7 @@ import (
 var openURLCommands = map[string]string{
 	"windows": "cmd /c start ",
 	"darwin":  "open ",
-	"linux":   "c-open ", //eog -w
+	"linux":   "open ", //eog -w
 }
 
 func getURL(serverPort int) []string {
