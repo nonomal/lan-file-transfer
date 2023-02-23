@@ -114,6 +114,9 @@ func PortInUse(portNumber int) int {
 	} else if runtime.GOOS == "linux" {
 		cmdStr := fmt.Sprintf("netstat -anp |grep %d", portNumber)
 		cmd = exec.Command(cmdStr)
+	} else if runtime.GOOS == "darwin" {
+		cmdStr := fmt.Sprintf("lsof -i tcp:%d", portNumber)
+		cmd = exec.Command(cmdStr)
 	}
 
 	cmd.Stdout = &outBytes
