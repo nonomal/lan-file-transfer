@@ -10,8 +10,6 @@
         <div style="text-align:center;left: 8px;position:relative;" id="qrcode"></div> 
         <div slot="footer"></div>
     </Modal>
-     <!-- <div> -->
-  
    
     <br/>
     <Button  v-if="!isMobile" style="width: 15%"  type="info" shape="circle" @click="openQrCodeModal">显示系统二维码</Button>
@@ -24,7 +22,6 @@
    
    
     <br/>
-   
     <Upload
         :on-success="getData"
         multiple
@@ -45,15 +42,12 @@
         @on-change="handlePage" @on-page-size-change='handlePageSize'
         ></Page>
     </div>
-
-  
    
 </template>
 
 <script>
 
 import { Button } from 'iview';
-
 import QRCode from 'qrcodejs2'
 export default {
     data () {
@@ -244,7 +238,6 @@ export default {
         },
 
         getQrCode(){
-            // new QRCode(document.getElementById('qrcode'), 'your content');
             this.qrcode = new QRCode('qrcode', {
                  text: this.url,
                 //text: "https://192.168.1.102:9999",
@@ -255,25 +248,13 @@ export default {
                 correctLevel : QRCode.CorrectLevel.H,
                 
             });
-            // 使用 API
-            // qrcode.clear();
-            // qrcode.makeCode('new content');
         },
         checkIsMobile() {
             var flag=navigator.userAgent.match(/(phone|pad|pod|iPhone|iPod|ios|iPad|Android|Mobile|BlackBerry|IEMobile|MQQBrowser|JUC|Fennec|wOSBrowser|BrowserNG|WebOS|Symbian|Windows Phone)/i)
-            
-             if(flag){
-                this._data.isMobile=true
-             }else{
-                this._data.isMobile=false
-             }
+            return flag
         },
         openQrCodeModal(){
-            if(!this._data.isMobile){
-                this._data.openQrCode = true
-            }else{
-                this._data.openQrCode = false
-            }
+            this._data.openQrCode = !this._data.isMobile
         },
         handlePage(value){
             this._data.tablePage.pageIndex = value;
