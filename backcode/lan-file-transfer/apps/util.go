@@ -1,7 +1,6 @@
 package apps
 
 import (
-	"bytes"
 	"fmt"
 	"lan-file-transfer/config"
 	"log"
@@ -9,9 +8,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"regexp"
 	"runtime"
-	"strconv"
 	"strings"
 )
 
@@ -19,7 +16,6 @@ const (
 	windows       = "windows"
 	darwin        = "darwin"
 	linux         = "linux"
-	notExist      = -1
 	httpLocalHost = "http://localhost"
 )
 
@@ -115,52 +111,30 @@ func GetCurrentDirectory() string {
 	return strings.Replace(dir, "\\", "/", -1)
 }
 
-// PortInUse
+// PortInOpen
 // 传入查询的端口号
 // 返回端口号对应的进程PID，若没有找到相关进程，返回-1
-func PortInUse(portNumber int) int {
-	res := notExist
-	var outBytes bytes.Buffer
-	var cmd *exec.Cmd
-	switch runtime.GOOS {
-	case windows:
-		cmdStr := fmt.Sprintf("netstat -ano -p tcp | findstr %d", portNumber)
-		cmd = exec.Command("cmd", "/c", cmdStr)
-	case linux:
-		cmdStr := fmt.Sprintf("netstat -anp |grep %d", portNumber)
-		cmd = exec.Command(cmdStr)
-	case darwin:
-		cmdStr := fmt.Sprintf("lsof -i tcp:%d", portNumber)
-		cmd = exec.Command(cmdStr)
+func PortInOpen(port int) bool {
+	ln, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
+	if err != nil {
+		return false
 	}
-
-	cmd.Stdout = &outBytes
-	cmd.Run()
-	resStr := outBytes.String()
-	r := regexp.MustCompile(`\s\d+\s`).FindAllString(resStr, -1)
-	if len(r) > 0 {
-		pid, err := strconv.Atoi(strings.TrimSpace(r[0]))
-		if err != nil {
-			res = notExist
-		} else {
-			res = pid
-		}
-	}
-	return res
+	defer ln.Close()
+	return true
 }
 
 // FindFreePort
 // 寻找附近的空闲端口
 func FindFreePort(portNumber int) int {
-	if PortInUse(portNumber) == notExist {
+	if PortInOpen(portNumber) {
 		return portNumber
 	}
 	temp := 1
 	for {
-		if PortInUse(portNumber+temp) == notExist {
+		if PortInOpen(portNumber + temp) {
 			return portNumber + temp
 		}
-		if PortInUse(portNumber-temp) == notExist {
+		if PortInOpen(portNumber - temp) {
 			return portNumber - temp
 		}
 		temp++

@@ -16,11 +16,11 @@ const (
 )
 
 //CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o lan-file-transfer_linux
-//CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -o lan-file-transfer_windows
+//CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -o lan-file-transfer_windows.exe
 //CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build -o lan-file-transfer_mac
 func init() {
 	port := 0
-	flag.IntVar(&port, "port", defaultPort, fmt.Sprintf("设置服务器端口是(默认:%d)", defaultPort))
+	flag.IntVar(&port, "port", defaultPort, "service port")
 	// 寻找指定端口附近空闲的端口
 	port = apps.FindFreePort(port)
 	_config := &config.Config{
@@ -34,6 +34,8 @@ func init() {
 
 func main() {
 	flag.Parse()
+	fmt.Printf("free port :%d", config.Get().ServerPort)
+	gin.SetMode(gin.ReleaseMode)
 	r := gin.Default()
 	router.Router(r)
 	// 启动一个协程，打开浏览器
