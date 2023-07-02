@@ -2,14 +2,15 @@ package config
 
 type Config struct {
 	ServerPort int
+	DataDir    string
 }
 
-var _cfg *Config
+var config *Config
+
+func Init(c *Config) {
+	config = c
+}
 
 func Get() *Config {
-	return _cfg
-}
-
-func Set(cfg *Config) {
-	_cfg = cfg
+	return config
 }

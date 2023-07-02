@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"github.com/ahmetb/go-linq/v3"
 	"github.com/gin-gonic/gin"
+	"io/fs"
 	"io/ioutil"
+	"lan-file-transfer/common"
 	"lan-file-transfer/config"
 	"lan-file-transfer/model"
 	"net/http"
@@ -14,61 +16,160 @@ import (
 	"strings"
 )
 
+const (
+	keyStr       = "key"
+	pageIndexStr = "pageIndex"
+	pageSizeStr  = "pageSize"
+	msg          = "msg"
+)
+
 func UploadFile(g *gin.Context) {
 	file, err := g.FormFile("file")
 	if err != nil {
-		g.String(500, "上传文件出错")
+		g.JSON(http.StatusInternalServerError, map[string]interface{}{
+			msg: fmt.Sprintf("FormFile err:%s", err.Error()),
+		})
+		return
 	}
-	g.SaveUploadedFile(file, GetCurrentDirectory()+"/data/"+file.Filename)
-
+	err = g.SaveUploadedFile(file, common.CombinePath(false, GetCurrentDirectory(), config.Get().DataDir, file.Filename))
+	if err != nil {
+		g.JSON(http.StatusInternalServerError, map[string]interface{}{
+			msg: fmt.Sprintf("SaveUploadedFile err:%s", err.Error()),
+		})
+		return
+	}
 	g.JSON(http.StatusOK, map[string]interface{}{
-		"code":    200,
-		"message": "上传成功",
+		msg: "upload success",
 	})
 }
 
 func DeleteFile(g *gin.Context) {
-	fileName, exist := g.GetQuery("fileName") //获取查询关键字
-	if !exist {
+	fileName, ok := g.GetQuery("fileName") //获取查询关键字
+	if !ok {
 		g.JSON(http.StatusOK, map[string]interface{}{
-			"code":    400,
-			"message": "请选择文件名",
+			msg: "file is not exist！",
 		})
+		return
 	}
-	err := os.Remove(GetCurrentDirectory() + "/data/" + fileName)
+	err := os.Remove(common.CombinePath(false, GetCurrentDirectory(), config.Get().DataDir, fileName))
 	if err != nil {
-		g.JSON(http.StatusNotFound, map[string]interface{}{
-			"code": 404,
-			"msg":  "删除失败",
+		g.JSON(http.StatusInternalServerError, map[string]interface{}{
+			msg: fmt.Sprintf("os.Remove err:%s", err.Error()),
 		})
-
-	} else {
-		g.JSON(http.StatusOK, map[string]interface{}{
-			"code": 200,
-			"msg":  "删除成功",
-		})
+		return
 	}
+	g.JSON(http.StatusOK, map[string]interface{}{
+		msg: "delete success",
+	})
+
 }
 
 func GetPageListFile(g *gin.Context) {
-	key, exist := g.GetQuery("key") //获取查询关键字
-	if !exist {
-		key = ""
+	pageIndex, pageSize, key, ok := getParam(g)
+	if !ok {
+		return
 	}
-	pageIndexStr, exist := g.GetQuery("pageIndex")
-	if !exist {
-		pageIndexStr = "1"
+	files, ok := getFiles(g)
+	if !ok {
+		return
 	}
-	pageSizeStr, exist := g.GetQuery("pageSize")
-	if !exist {
-		pageSizeStr = "10"
+	//关键字过滤
+	newFiles := filterFiles(key, files)
+	//排序
+	sort.Sort(newFiles)
+	total := len(newFiles)
+	//分页
+	data := getPageFiles(pageIndex, pageSize, newFiles)
+	g.JSON(http.StatusOK, map[string]interface{}{
+		"data":  data,
+		"total": total,
+	})
+}
+
+func GetLocalUrls(g *gin.Context) {
+	ips := GetLocalIps()
+	urls := make([]string, 0)
+	for _, ip := range ips {
+		urls = append(urls, fmt.Sprintf("http://%s:%d", ip, config.Get().ServerPort))
 	}
-	path := GetCurrentDirectory() + "/data"
+	g.JSON(http.StatusOK, map[string]interface{}{
+		"urls": urls,
+	})
+}
+
+//getParam 获取参数 pageIndex、pageSize、key
+func getParam(g *gin.Context) (pageIndex, pageSize int, key string, ok bool) {
+	pageIndexValue, ok := g.GetQuery(pageIndexStr)
+	pageErrStr := fmt.Sprintf("pageIndex,pageSize must be greater 0")
+	keyErrStr := fmt.Sprintf("key must be offer")
+	if !ok {
+		g.JSON(http.StatusBadRequest, map[string]interface{}{
+			msg: pageErrStr,
+		})
+		return 0, 0, "", false
+	}
+	pageSizeValue, ok := g.GetQuery(pageSizeStr)
+	if !ok {
+		g.JSON(http.StatusBadRequest, map[string]interface{}{
+			msg: pageErrStr,
+		})
+		return 0, 0, "", false
+	}
+
+	keyValue, ok := g.GetQuery(keyStr)
+	if !ok {
+		g.JSON(http.StatusBadRequest, map[string]interface{}{
+			msg: keyErrStr,
+		})
+		return 0, 0, "", false
+	}
+
+	pageIndex, err := strconv.Atoi(pageIndexValue)
+	if err != nil || pageIndex <= 0 {
+		g.JSON(http.StatusBadRequest, map[string]interface{}{
+			msg: pageErrStr,
+		})
+		return 0, 0, "", false
+	}
+	pageSize, err = strconv.Atoi(pageSizeValue)
+	if err != nil || pageSize <= 0 {
+		g.JSON(http.StatusBadRequest, map[string]interface{}{
+			msg: pageErrStr,
+		})
+		return 0, 0, "", false
+	}
+	return pageIndex, pageSize, keyValue, true
+}
+
+//获取文件集合
+func getFiles(g *gin.Context) ([]fs.FileInfo, bool) {
+	path := common.CombinePath(false, GetCurrentDirectory(), config.Get().DataDir)
 	files, err := ioutil.ReadDir(path)
 	if err != nil {
-		fmt.Println(err)
+		g.JSON(http.StatusInternalServerError, map[string]interface{}{
+			msg: fmt.Sprintf("get files %s err:%s", path, err.Error()),
+		})
+		return nil, false
 	}
-	//按 key 过滤
+	return files, true
+}
+
+//分页获取文件集合
+func getPageFiles(pageIndex, pageSize int, files FilesByModTime) []model.FileModel {
+	data := make([]model.FileModel, 0)
+	length := len(files)
+	for i := 0; i < pageSize; i++ {
+		if length > pageSize*(pageIndex-1)+i {
+			name := files[pageSize*(pageIndex-1)+i].Name()
+			createTime := files[pageSize*(pageIndex-1)+i].ModTime().Unix()
+			data = append(data, model.FileModel{FileName: name, CreateTime: createTime})
+		}
+	}
+	return data
+}
+
+//关键字过滤文件集合
+func filterFiles(key string, files FilesByModTime) FilesByModTime {
 	newFiles := make([]os.FileInfo, len(files))
 	copy(newFiles, files)
 	if key != "" {
@@ -77,57 +178,19 @@ func GetPageListFile(g *gin.Context) {
 			return strings.Index(file.Name(), key) >= 0
 		}).ToSlice(&newFiles)
 	}
-	//排序
-	sort.Sort(ByModTime(newFiles))
-
-	pageIndex, err := strconv.Atoi(pageIndexStr)
-	if err != nil {
-
-	}
-	pageSize, err := strconv.Atoi(pageSizeStr)
-	if err != nil {
-
-	}
-
-	if pageIndex < 1 {
-		g.JSON(http.StatusBadRequest, map[string]interface{}{
-			"code": 400,
-			"msg":  "pageIndex不能小于1",
-		})
-	}
-	total := len(newFiles)
-	data := make([]model.FileModel, 0)
-	length := len(newFiles)
-	for i := 0; i < pageSize; i++ {
-		if length > pageSize*(pageIndex-1)+i {
-			name := newFiles[pageSize*(pageIndex-1)+i].Name()
-			createTime := newFiles[pageSize*(pageIndex-1)+i].ModTime().Unix()
-			data = append(data, model.FileModel{FileName: name, CreateTime: createTime})
-		}
-	}
-	g.JSON(http.StatusOK, map[string]interface{}{
-		"data":  data,
-		"total": total,
-	})
+	return newFiles
 }
 
-func GetUrls(g *gin.Context) {
-	urls := getURL(config.Get().ServerPort)
-	g.JSON(http.StatusOK, map[string]interface{}{
-		"urls": urls,
-	})
-}
+type FilesByModTime []os.FileInfo
 
-type ByModTime []os.FileInfo
-
-func (fis ByModTime) Len() int {
+func (fis FilesByModTime) Len() int {
 	return len(fis)
 }
 
-func (fis ByModTime) Swap(i, j int) {
+func (fis FilesByModTime) Swap(i, j int) {
 	fis[i], fis[j] = fis[j], fis[i]
 }
 
-func (fis ByModTime) Less(i, j int) bool {
+func (fis FilesByModTime) Less(i, j int) bool {
 	return fis[i].ModTime().After(fis[j].ModTime())
 }

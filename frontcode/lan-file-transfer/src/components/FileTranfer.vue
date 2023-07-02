@@ -26,8 +26,7 @@
         :on-success="getData"
         multiple
         type="drag"
-        action="/api/uploadFile"
-        >
+        action="/api/uploadFile">
         <div style="padding: 1.25rem ;background-color:coral;">
             <Icon type="ios-cloud-upload" size="100" style="color: #8F8F9E"></Icon>
             <p class="p1">点击或将文件拖拽到这里上传</p>
@@ -67,7 +66,7 @@ export default {
             isMobile:false,
             qrcode:"",
             hostPort:"",//测试的时候需要切换ip
-            //hostPort:"http://192.168.1.102:9999",//测试的时候需要切换ip
+            //hostPort:"http://192.168.1.103:9999",//测试的时候需要切换ip
             columns1: [
                 {
                     title: '文件名',
@@ -190,7 +189,7 @@ export default {
                 pageSize:this._data.tablePage.pageSize
             }
           
-            _this.axios.get(_this.hostPort+'/api/files',
+            _this.axios.get(_this.hostPort+'/api/getPageListFile',
                 {
                     params: param
                 })   
@@ -221,7 +220,7 @@ export default {
         },
         getUrls(){
             let _this=this;
-            _this.axios.get(_this.hostPort+'/api/getUrls')   
+            _this.axios.get(_this.hostPort+'/api/getLocalUrls')   
                 .then(function (response) {
                    _this._data.urls=response.data.urls;
                    _this._data.url=response.data.urls[0];

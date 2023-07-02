@@ -3,6 +3,7 @@ package apps
 import (
 	"bytes"
 	"fmt"
+	"lan-file-transfer/config"
 	"log"
 	"net"
 	"os"
@@ -14,58 +15,72 @@ import (
 	"strings"
 )
 
+const (
+	windows       = "windows"
+	darwin        = "darwin"
+	linux         = "linux"
+	notExist      = -1
+	httpLocalHost = "http://localhost"
+)
+
 // commands 打开浏览器 不同环境命令
 var openURLCommands = map[string]string{
-	"windows": "cmd /c start ",
-	"darwin":  "open ",
-	"linux":   "open ", //eog -w
+	windows: "cmd /c start ",
+	darwin:  "open ",
+	linux:   "xdg-open ",
 }
 
-func getURL(serverPort int) []string {
+//GetLocalIps 获取本机ip集合
+func GetLocalIps() []string {
 	addrList, err := net.InterfaceAddrs()
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-	urls := make([]string, 0)
-
-	//先添加192.168.1. 开头的ip
+	ips := make([]string, 0)
+	//先添加192.168.1. 开头的ip(保持顺序)
 	for _, address := range addrList {
 		// 检查ip地址判断是否回环地址
 		if ipNet, ok := address.(*net.IPNet); ok && !ipNet.IP.IsLoopback() && ipNet.IP.To4() != nil &&
 			strings.Index(ipNet.IP.String(), "192.168.1.") >= 0 {
-			url := "http://" + ipNet.IP.String() + ":" + strconv.Itoa(serverPort)
-			urls = append(urls, url)
+			ips = append(ips, ipNet.IP.String())
 			break
 		}
 	}
-	//再添加 除 192.168.1. 开头 以外的ip
+	//再添加除 192.168. 开头以外的ip
 	for _, address := range addrList {
 		// 检查ip地址判断是否回环地址
 		if ipNet, ok := address.(*net.IPNet); ok && !ipNet.IP.IsLoopback() && ipNet.IP.To4() != nil &&
-			strings.Index(ipNet.IP.String(), "192.168.1.") < 0 {
-			url := "http://" + ipNet.IP.String() + ":" + strconv.Itoa(serverPort)
-			urls = append(urls, url)
+			strings.Index(ipNet.IP.String(), "192.168.") >= 0 && strings.Index(ipNet.IP.String(), "192.168.1.") < 0 {
+			ips = append(ips, ipNet.IP.String())
 		}
 	}
-	return urls
+	//再添其它的ip
+	for _, address := range addrList {
+		// 检查ip地址判断是否回环地址
+		if ipNet, ok := address.(*net.IPNet); ok && !ipNet.IP.IsLoopback() && ipNet.IP.To4() != nil &&
+			strings.Index(ipNet.IP.String(), "192.168.") < 0 {
+			ips = append(ips, ipNet.IP.String())
+		}
+	}
+	return ips
 
 }
 
 // OpenUrl  打开 本地ip+端口 浏览器
-func OpenUrl(serverPort int) error {
-	uri := "http://localhost:" + strconv.Itoa(serverPort)
+func OpenUrl() error {
+	url := fmt.Sprintf("%s:%d", httpLocalHost, config.Get().ServerPort)
 	//runtime.GOOS
 	run, ok := openURLCommands[runtime.GOOS]
 	if !ok {
 		return fmt.Errorf("don't know how to open things on %s platform", runtime.GOOS)
 	}
 	//exec.Command
-	run = run + uri
+	run = run + url
 	cmds := strings.Split(run, " ")
 	cmd := exec.Command(cmds[0], cmds[1:]...)
 	//cmd.Start
-	fmt.Println("[CommandAs]", cmds)
+	fmt.Printf("exec commad :[%s]", run)
 	return cmd.Start()
 }
 
@@ -104,17 +119,17 @@ func GetCurrentDirectory() string {
 // 传入查询的端口号
 // 返回端口号对应的进程PID，若没有找到相关进程，返回-1
 func PortInUse(portNumber int) int {
-	res := -1
+	res := notExist
 	var outBytes bytes.Buffer
-
 	var cmd *exec.Cmd
-	if runtime.GOOS == "windows" {
+	switch runtime.GOOS {
+	case windows:
 		cmdStr := fmt.Sprintf("netstat -ano -p tcp | findstr %d", portNumber)
 		cmd = exec.Command("cmd", "/c", cmdStr)
-	} else if runtime.GOOS == "linux" {
+	case linux:
 		cmdStr := fmt.Sprintf("netstat -anp |grep %d", portNumber)
 		cmd = exec.Command(cmdStr)
-	} else if runtime.GOOS == "darwin" {
+	case darwin:
 		cmdStr := fmt.Sprintf("lsof -i tcp:%d", portNumber)
 		cmd = exec.Command(cmdStr)
 	}
@@ -126,7 +141,7 @@ func PortInUse(portNumber int) int {
 	if len(r) > 0 {
 		pid, err := strconv.Atoi(strings.TrimSpace(r[0]))
 		if err != nil {
-			res = -1
+			res = notExist
 		} else {
 			res = pid
 		}
@@ -137,18 +152,17 @@ func PortInUse(portNumber int) int {
 // FindFreePort
 // 寻找附近的空闲端口
 func FindFreePort(portNumber int) int {
-	if PortInUse(portNumber) == -1 {
+	if PortInUse(portNumber) == notExist {
 		return portNumber
 	}
 	temp := 1
 	for {
-		if PortInUse(portNumber+temp) == -1 {
+		if PortInUse(portNumber+temp) == notExist {
 			return portNumber + temp
 		}
-		if PortInUse(portNumber-temp) == -1 {
+		if PortInUse(portNumber-temp) == notExist {
 			return portNumber - temp
 		}
 		temp++
 	}
-	return portNumber
 }

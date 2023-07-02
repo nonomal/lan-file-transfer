@@ -5,65 +5,40 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"lan-file-transfer/apps"
+	"lan-file-transfer/common"
 	"lan-file-transfer/config"
 	"lan-file-transfer/router"
-	"net/http"
-	"strconv"
-	"strings"
 )
 
-//go build -ldflags "-s -w" -o main .\main.go
+const (
+	defaultPort = 9999
+	dataDir     = "data"
+)
+
+//CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o lan-file-transfer_linux
+//CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -o lan-file-transfer_windows
+//CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build -o lan-file-transfer_mac
 func init() {
-	config.Set(&config.Config{
-		ServerPort: 9999,
-	})
-	flag.IntVar(&config.Get().ServerPort, "port", 9999, "设置服务器端口是（默认是9999）")
+	port := 0
+	flag.IntVar(&port, "port", defaultPort, fmt.Sprintf("设置服务器端口是(默认:%d)", defaultPort))
+	// 寻找指定端口附近空闲的端口
+	port = apps.FindFreePort(port)
+	_config := &config.Config{
+		ServerPort: port,
+		DataDir:    dataDir,
+	}
+	config.Init(_config)
+	//创建文件夹
+	apps.CreateDir(common.CombinePath(false, apps.GetCurrentDirectory(), config.Get().DataDir))
 }
 
 func main() {
 	flag.Parse()
-	//寻找通过指定端口寻找附近空闲端口
-	config.Get().ServerPort = apps.FindFreePort(config.Get().ServerPort)
-	apps.CreateDir(apps.GetCurrentDirectory() + "/data")
 	r := gin.Default()
-	r.Use(Cors)
 	router.Router(r)
+	// 启动一个协程，打开浏览器
 	go func() {
-		apps.OpenUrl(config.Get().ServerPort)
+		apps.OpenUrl()
 	}()
-
-	r.Run(":" + strconv.Itoa(config.Get().ServerPort))
-
-}
-
-// Cors 跨域设置  调试的时候用
-func Cors(context *gin.Context) {
-	method := context.Request.Method
-	origin := context.Request.Header.Get("Origin")
-	var headerKeys []string
-	for key, _ := range context.Request.Header {
-		headerKeys = append(headerKeys, key)
-	}
-	headerStr := strings.Join(headerKeys, ",")
-	if headerStr != "" {
-		headerStr = fmt.Sprintf("access-control-allow-origin, access-control-allow-headers, %s", headerStr)
-	} else {
-		headerStr = "access-control-allow-origin, access-control-allow-headers"
-	}
-	if origin != "" {
-		context.Writer.Header().Set("Access-Control-Allow-Origin", "*")
-		context.Header("Access-Control-Allow-Origin", "*") // 设置允许访问所有域
-		context.Header("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE,UPDATE")
-		context.Header("Access-Control-Allow-Headers", "Authorization, Content-Length, X-CSRF-Token, Token,session,X_Requested_With,Accept, Origin, Host, Connection, Accept-Encoding, Accept-Language,DNT, X-CustomHeader, Keep-Alive, User-Agent, X-Requested-With, If-Modified-Since, Cache-Control, Content-Type, Pragma")
-		context.Header("Access-Control-Expose-Headers", "Content-Length, Access-Control-Allow-Origin, Access-Control-Allow-Headers,Cache-Control,Content-Language,Content-Type,Expires,Last-Modified,Pragma,FooBar")
-		context.Header("Access-Control-Max-Age", "172800")
-		context.Header("Access-Control-Allow-Credentials", "false")
-		context.Set("content-type", "application/json") //// 设置返回格式是json
-	}
-
-	if method == "OPTIONS" {
-		context.JSON(http.StatusOK, "Options Request!")
-	}
-	//处理请求
-	context.Next()
+	r.Run(fmt.Sprintf(":%d", config.Get().ServerPort))
 }
