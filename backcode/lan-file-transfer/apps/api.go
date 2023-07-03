@@ -6,11 +6,11 @@ import (
 	"github.com/gin-gonic/gin"
 	"io/fs"
 	"io/ioutil"
-	"lan-file-transfer/common"
 	"lan-file-transfer/config"
 	"lan-file-transfer/model"
 	"net/http"
 	"os"
+	"path/filepath"
 	"sort"
 	"strconv"
 	"strings"
@@ -31,7 +31,7 @@ func UploadFile(g *gin.Context) {
 		})
 		return
 	}
-	err = g.SaveUploadedFile(file, common.CombinePath(false, GetCurrentDirectory(), config.Get().DataDir, file.Filename))
+	err = g.SaveUploadedFile(file, filepath.Join(GetCurrentDirectory(), config.Get().DataDir, file.Filename))
 	if err != nil {
 		g.JSON(http.StatusInternalServerError, map[string]interface{}{
 			msg: fmt.Sprintf("SaveUploadedFile err:%s", err.Error()),
@@ -51,7 +51,7 @@ func DeleteFile(g *gin.Context) {
 		})
 		return
 	}
-	err := os.Remove(common.CombinePath(false, GetCurrentDirectory(), config.Get().DataDir, fileName))
+	err := os.Remove(filepath.Join(GetCurrentDirectory(), config.Get().DataDir, fileName))
 	if err != nil {
 		g.JSON(http.StatusInternalServerError, map[string]interface{}{
 			msg: fmt.Sprintf("os.Remove err:%s", err.Error()),
@@ -143,7 +143,7 @@ func getParam(g *gin.Context) (pageIndex, pageSize int, key string, ok bool) {
 
 //获取文件集合
 func getFiles(g *gin.Context) ([]fs.FileInfo, bool) {
-	path := common.CombinePath(false, GetCurrentDirectory(), config.Get().DataDir)
+	path := filepath.Join(GetCurrentDirectory(), config.Get().DataDir)
 	files, err := ioutil.ReadDir(path)
 	if err != nil {
 		g.JSON(http.StatusInternalServerError, map[string]interface{}{

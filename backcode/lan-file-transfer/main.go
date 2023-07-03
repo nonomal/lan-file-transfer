@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"lan-file-transfer/apps"
-	"lan-file-transfer/common"
 	"lan-file-transfer/config"
 	"lan-file-transfer/router"
+	"path/filepath"
 )
 
 const (
@@ -29,7 +29,7 @@ func init() {
 	}
 	config.Init(_config)
 	//创建文件夹
-	apps.CreateDir(common.CombinePath(false, apps.GetCurrentDirectory(), config.Get().DataDir))
+	apps.CreateDir(filepath.Join(apps.GetCurrentDirectory(), config.Get().DataDir))
 }
 
 func main() {
