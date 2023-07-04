@@ -22,7 +22,7 @@ const (
 )
 
 func Router(r *gin.Engine) {
-	// 执行：go-bindata -o asset.go dist/...
+	// 执行：go-bindata -o asset.go dist/...    将dist文件夹集成  asset文件夹(go代码)
 	fsCss := assetfs.AssetFS{Asset: asset.Asset, AssetDir: asset.AssetDir, AssetInfo: nil, Prefix: filepath.Join(dist, static, css), Fallback: indexHtml}
 	fsJs := assetfs.AssetFS{Asset: asset.Asset, AssetDir: asset.AssetDir, AssetInfo: nil, Prefix: filepath.Join(dist, static, js), Fallback: indexHtml}
 	fsFonts := assetfs.AssetFS{Asset: asset.Asset, AssetDir: asset.AssetDir, AssetInfo: nil, Prefix: filepath.Join(dist, static, fonts), Fallback: indexHtml}
@@ -42,12 +42,13 @@ func Router(r *gin.Engine) {
 	})
 	//上传文件
 	r.POST("/api/uploadFile", apps.UploadFile)
-	//获取文件列表
+	//获取文件分页列表
 	r.GET("/api/getPageListFile", apps.GetPageListFile)
 	//删除文件
 	r.DELETE("/api/deleteFile", apps.DeleteFile)
+	//获取可访问本程序的url集合
+	r.GET("/api/getLocalUrls", apps.GetLocalUrls)
+
 	//数据
 	r.StaticFS(filepath.Join(string(os.PathSeparator), config.Get().DataDir), http.Dir(filepath.Join(apps.GetCurrentDirectory(), config.Get().DataDir)))
-	//获取url 地址
-	r.GET("/api/getLocalUrls", apps.GetLocalUrls)
 }

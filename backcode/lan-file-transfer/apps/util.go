@@ -34,31 +34,30 @@ func GetLocalIps() []string {
 		os.Exit(1)
 	}
 	ips := make([]string, 0)
-	//先添加192.168.1. 开头的ip(保持顺序)
+	localIps := make([]string, 0)
+	local2Ips := make([]string, 0)
+	otherIps := make([]string, 0)
 	for _, address := range addrList {
-		// 检查ip地址判断是否回环地址
-		if ipNet, ok := address.(*net.IPNet); ok && !ipNet.IP.IsLoopback() && ipNet.IP.To4() != nil &&
-			strings.Index(ipNet.IP.String(), "192.168.1.") >= 0 {
-			ips = append(ips, ipNet.IP.String())
-			break
+		ipNet, ok := address.(*net.IPNet)
+		if !ok || ipNet.IP.IsLoopback() || ipNet.IP.To4() == nil {
+			continue
+		}
+		ip := ipNet.IP.String()
+		switch {
+		//192.168.1.开头的ip
+		case strings.Index(ip, "192.168.1.") >= 0:
+			localIps = append(localIps, ip)
+		//192.168.开头 但不以192.168.开头的ip
+		case strings.Index(ip, "192.168.1.") < 0 && strings.Index(ip, "192.168.") >= 0:
+			localIps = append(localIps, ip)
+		//其他ip
+		default:
+			otherIps = append(otherIps, ip)
 		}
 	}
-	//再添加除 192.168. 开头以外的ip
-	for _, address := range addrList {
-		// 检查ip地址判断是否回环地址
-		if ipNet, ok := address.(*net.IPNet); ok && !ipNet.IP.IsLoopback() && ipNet.IP.To4() != nil &&
-			strings.Index(ipNet.IP.String(), "192.168.") >= 0 && strings.Index(ipNet.IP.String(), "192.168.1.") < 0 {
-			ips = append(ips, ipNet.IP.String())
-		}
-	}
-	//再添其它的ip
-	for _, address := range addrList {
-		// 检查ip地址判断是否回环地址
-		if ipNet, ok := address.(*net.IPNet); ok && !ipNet.IP.IsLoopback() && ipNet.IP.To4() != nil &&
-			strings.Index(ipNet.IP.String(), "192.168.") < 0 {
-			ips = append(ips, ipNet.IP.String())
-		}
-	}
+	ips = append(ips, localIps...)
+	ips = append(ips, local2Ips...)
+	ips = append(ips, otherIps...)
 	return ips
 
 }
@@ -66,17 +65,16 @@ func GetLocalIps() []string {
 // OpenUrl  打开 本地ip+端口 浏览器
 func OpenUrl() error {
 	url := fmt.Sprintf("%s:%d", httpLocalHost, config.Get().ServerPort)
-	//runtime.GOOS
 	run, ok := openURLCommands[runtime.GOOS]
 	if !ok {
-		return fmt.Errorf("don't know how to open things on %s platform", runtime.GOOS)
+		return fmt.Errorf("not exist %s platform openUrl command", runtime.GOOS)
 	}
 	//exec.Command
 	run = run + url
 	cmds := strings.Split(run, " ")
 	cmd := exec.Command(cmds[0], cmds[1:]...)
-	//cmd.Start
-	fmt.Printf("exec commad :[%s]", run)
+	// print log
+	fmt.Println(fmt.Sprintf("exec commad :[%s]", run))
 	return cmd.Start()
 }
 
@@ -129,14 +127,14 @@ func FindFreePort(portNumber int) int {
 	if PortInOpen(portNumber) {
 		return portNumber
 	}
-	temp := 1
+	offset := 1
 	for {
-		if PortInOpen(portNumber + temp) {
-			return portNumber + temp
+		if PortInOpen(portNumber + offset) {
+			return portNumber + offset
 		}
-		if PortInOpen(portNumber - temp) {
-			return portNumber - temp
+		if PortInOpen(portNumber - offset) {
+			return portNumber - offset
 		}
-		temp++
+		offset++
 	}
 }

@@ -65,10 +65,12 @@ func DeleteFile(g *gin.Context) {
 }
 
 func GetPageListFile(g *gin.Context) {
+	//获取参数
 	pageIndex, pageSize, key, ok := getParam(g)
 	if !ok {
 		return
 	}
+	//获取文件集合
 	files, ok := getFiles(g)
 	if !ok {
 		return
@@ -77,9 +79,8 @@ func GetPageListFile(g *gin.Context) {
 	newFiles := filterFiles(key, files)
 	//排序
 	sort.Sort(newFiles)
-	total := len(newFiles)
 	//分页
-	data := getPageFiles(pageIndex, pageSize, newFiles)
+	total, data := getPageFiles(pageIndex, pageSize, newFiles)
 	g.JSON(http.StatusOK, map[string]interface{}{
 		"data":  data,
 		"total": total,
@@ -155,7 +156,7 @@ func getFiles(g *gin.Context) ([]fs.FileInfo, bool) {
 }
 
 //分页获取文件集合
-func getPageFiles(pageIndex, pageSize int, files FilesByModTime) []model.FileModel {
+func getPageFiles(pageIndex, pageSize int, files FilesByModTime) (int, []model.FileModel) {
 	data := make([]model.FileModel, 0)
 	length := len(files)
 	for i := 0; i < pageSize; i++ {
@@ -165,7 +166,7 @@ func getPageFiles(pageIndex, pageSize int, files FilesByModTime) []model.FileMod
 			data = append(data, model.FileModel{FileName: name, CreateTime: createTime})
 		}
 	}
-	return data
+	return length, data
 }
 
 //关键字过滤文件集合
